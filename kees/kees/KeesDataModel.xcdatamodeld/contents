@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model name="KeesDataModel" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22700" systemVersion="23E214" minimumToolsVersion="Xcode 4.3" macOSVersion="14.4" iOSVersion="17.4">
+    <entity name="StoredAPIKey" representedClassName="StoredAPIKey" syncable="YES">
+        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="descriptionText" attributeType="String" usesScalarValueType="NO" optional="YES" syncable="YES"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="keyValue" attributeType="String" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="name" attributeType="String" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="tags" attributeType="Transformable" usesScalarValueType="NO" optional="YES" customClassName="NSArray" transformerName="NSSecureUnarchiveFromDataTransformer" syncable="YES"/>
+        <attribute name="usageLocation" attributeType="String" usesScalarValueType="NO" optional="YES" syncable="YES"/>
+        <attribute name="expirationDate" attributeType="Date" usesScalarValueType="NO" optional="YES" syncable="YES"/>
+    </entity>
+</model>
