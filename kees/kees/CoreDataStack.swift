@@ -47,4 +47,38 @@ class CoreDataStack {
     //         return []
     //     }
     // }
+
+    // MARK: - Preview Specific Stack
+    #if DEBUG
+    static var preview: CoreDataStack = {
+        let result = CoreDataStack(inMemory: true)
+        let viewContext = result.persistentContainer.viewContext
+        // Optional: Add sample data for previews here if desired
+        // For example, create a few StoredAPIKey instances for global preview use.
+        // let key1 = StoredAPIKey(context: viewContext)
+        // key1.id = UUID()
+        // key1.name = "Preview Key 1"
+        // key1.keyValue = "preview123"
+        // key1.creationDate = Date()
+        // do {
+        //     try viewContext.save()
+        // } catch {
+        //     let nsError = error as NSError
+        //     fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        // }
+        return result
+    }()
+
+    init(inMemory: Bool = false) {
+        persistentContainer = NSPersistentContainer(name: modelName)
+        if inMemory {
+            persistentContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+        }
+        persistentContainer.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            }
+        })
+    }
+    #endif
 }
