@@ -34,8 +34,18 @@ struct APIKeyRowView: View {
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading) {
-                Text(apiKey.name ?? "Untitled Key")
-                    .font(.headline)
+                HStack {
+                    Text(apiKey.name ?? "Untitled Key")
+                        .font(.headline)
+                    Button {
+                        toggleFavorite()
+                    } label: {
+                        Image(systemName: apiKey.isFavorite ? "star.fill" : "star")
+                            .foregroundColor(apiKey.isFavorite ? .yellow : .gray)
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                    .help(apiKey.isFavorite ? "Remove from favorites" : "Add to favorites")
+                }
                 HStack {
                     Text(displayedKeyValue)
                         .font(.system(.body, design: .monospaced)) // Monospaced for keys
@@ -90,46 +100,63 @@ struct APIKeyRowView: View {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(keyValue, forType: .string)
-        // Optionally, provide feedback to the user (e.g., show a temporary "Copied!" message)
+    }
+    
+    private func toggleFavorite() {
+        apiKey.isFavorite.toggle()
+        do {
+            try apiKey.managedObjectContext?.save()
+        } catch {
+            // Handle save error, e.g., log it or show an alert
+            print("Failed to save favorite status: \(error.localizedDescription)")
+        }
     }
 }
 
 // Preview requires a mock StoredAPIKey instance and a Core Data context.
+#if DEBUG
 struct APIKeyRowView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create a mock Core Data context for the preview
-        let context = CoreDataStack.shared.persistentContainer.viewContext
+        // Use the preview-specific Core Data context
+        let context = CoreDataStack.preview.container.viewContext
         
         // Create a sample StoredAPIKey for preview
-        let sampleKey = StoredAPIKey(context: context)
-        sampleKey.id = UUID()
-        sampleKey.name = "My Test API Key"
-        sampleKey.keyValue = "abcdef123456ghijkl7890uvwxyz"
-        sampleKey.creationDate = Date()
-        sampleKey.descriptionText = "This is a sample key for preview."
-        sampleKey.tags = ["test", "preview", "sample"] as NSArray // Stored as NSArray
+        let sampleKey1 = StoredAPIKey(context: context)
+        sampleKey1.id = UUID()
+        sampleKey1.name = "My Test API Key (Favorite)"
+        sampleKey1.keyValue = "abcdef123456ghijkl7890uvwxyz"
+        sampleKey1.creationDate = Date()
+        sampleKey1.descriptionText = "This is a sample key for preview with a relatively long name and key value to test truncation and layout."
+        sampleKey1.tags = ["test", "preview", "sample", "long-tag-name-example"] as NSArray
+        sampleKey1.expirationDate = Calendar.current.date(byAdding: .month, value: 6, to: Date())
+        sampleKey1.isFavorite = true
 
-        let emptyKey = StoredAPIKey(context: context)
-        emptyKey.id = UUID()
-        emptyKey.name = "Another Key"
-        emptyKey.keyValue = "short"
-        emptyKey.creationDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())
+        let sampleKey2 = StoredAPIKey(context: context)
+        sampleKey2.id = UUID()
+        sampleKey2.name = "Short Key (Not Favorite)"
+        sampleKey2.keyValue = "short"
+        sampleKey2.creationDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())
+        sampleKey2.isFavorite = false
+        // No description, tags, or expiration for this one to test optional handling
         
         return Group {
-            APIKeyRowView(apiKey: sampleKey)
-                .padding()
+            APIKeyRowView(apiKey: sampleKey1)
                 .previewLayout(.sizeThatFits)
+                .padding()
+                .previewDisplayName("Favorite Key Example")
 
-            APIKeyRowView(apiKey: emptyKey)
-                .padding()
+            APIKeyRowView(apiKey: sampleKey2)
                 .previewLayout(.sizeThatFits)
+                .padding()
+                .previewDisplayName("Not Favorite Key Example")
             
             // Example of the key shown
-            APIKeyRowView(apiKey: sampleKey, showFullKey: true)
-                .padding()
+            APIKeyRowView(apiKey: sampleKey1, showFullKey: true)
                 .previewLayout(.sizeThatFits)
-
+                .padding()
+                .previewDisplayName("Favorite Key Shown")
         }
-        .environment(\.managedObjectContext, context) // Inject context for preview
+        .environment(\.managedObjectContext, context) // Inject preview context
     }
 }
+#endif

@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreData
+import UserNotifications // Import UserNotifications
 
 @main
 struct keesApp: App {
@@ -11,6 +12,10 @@ struct keesApp: App {
 
     // Initialize UIState for managing global UI states like sheet presentation
     @StateObject var uiState = UIState()
+
+    init() {
+        requestNotificationPermission()
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -29,6 +34,18 @@ struct keesApp: App {
                     uiState.showingAddKeySheet = true
                 }
                 .keyboardShortcut("n", modifiers: .command)
+            }
+        }
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if granted {
+                print("Notification permission granted.")
+            } else if let error = error {
+                print("Notification permission denied with error: \(error.localizedDescription)")
+            } else {
+                print("Notification permission denied (no error specified).")
             }
         }
     }
